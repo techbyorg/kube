@@ -337,7 +337,8 @@ function build () {
   if [ -e ./package.json ]; then
     echo "pre-building project via npm"
     # npm install
-    npm run dist || true
+    # redirect errors to /dev/null & don't fail if dist script doesn't exist
+    npm run dist 2> /dev/null || true
   fi
 
   echo "Building Docker image"
