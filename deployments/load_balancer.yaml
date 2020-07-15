@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: load-balancer
+  namespace: $NAMESPACE
+spec:
+  replicas: $REPLICAS
+  template:
+    metadata:
+      name: load-balancer
+      labels:
+        name: load-balancer
+        app: load-balancer
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+      containers:
+        - name: load-balancer$TIMESTAMP
+          image: gcr.io/free-roam-app/load-balancer:$TAG
+          # resources:
+          #   requests:
+          #     cpu: '$LOAD_BALANCER_CPU_REQUEST'
+          env:
+            - name: ADMIN_PASSWORD
+              value: '$HAPROXY_ADMIN_PASS'
+          ports:
+            - containerPort: 80

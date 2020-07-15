@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: impact
+  labels:
+    name: impact
+spec:
+  ports:
+    - port: 8080
+  selector:
+    name: impact

@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elasticsearch-hq
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: elasticsearch-hq
+      labels:
+        name: elasticsearch-hq
+        app: elasticsearch-hq
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+      containers:
+        - name: elasticsearch-hq$TIMESTAMP
+          image: elastichq/elasticsearch-hq
+          env:
+            - name: HQ_DEFAULT_URL
+              value: 'http://10.244.78.2:9200'
+          ports:
+            - containerPort: 5000

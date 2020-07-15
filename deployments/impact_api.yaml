@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: impact-api
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  minReadySeconds: 10
+  template:
+    metadata:
+      name: impact-api
+      labels:
+        name: impact-api
+        app: impact-api
+    spec:
+      nodeSelector:
+        doks.digitalocean.com/node-pool: tech-by
+      containers:
+        - name: impact-api
+          image: gcr.io/free-roam-app/impact-api:$TAG
+          # resources:
+          #   requests:
+          #     cpu: 500m
+          env:
+            # so pods will restart w/ `update -s` (from change in template)
+            - name: DEPLOY_TIME
+              value: '$TIMESTAMP'
+
+            - name: IMPACT_API_PORT
+              value: '80'
+            - name: REDIS_CACHE_HOST
+              value: '$REDIS_CACHE_HOST'
+            - name: REDIS_PUB_SUB_HOST
+              value: '$REDIS_PUB_SUB_HOST'
+            - name: REDIS_PERSISTENT_HOST
+              value: '$REDIS_PERSISTENT_HOST'
+            - name: ELASTICSEARCH_HOST
+              value: '$ALTELASTICSEARCH_HOST'
+            - name: SCYLLA_CONTACT_POINTS
+              value: '$SCYLLA_CONTACT_POINTS'
+
+            - name: DEV_USE_HTTPS
+              value: '0'
+          ports:
+            - containerPort: 80
+          # readinessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 5
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 30

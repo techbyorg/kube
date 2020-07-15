@@ -1,0 +1,101 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: phil
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  minReadySeconds: 10
+  template:
+    metadata:
+      name: phil
+      labels:
+        name: phil
+        app: phil
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-4vcpu-8gb
+      containers:
+        - name: phil
+          image: gcr.io/free-roam-app/phil:$TAG
+          # resources:
+          #   requests:
+          #     cpu: 500m
+          #   # limits:
+          #   #   cpu: '$PHIL_MAX_CPU'
+          env:
+            # so pods will restart w/ `update -s` (from change in template)
+            - name: DEPLOY_TIME
+              value: '$TIMESTAMP'
+
+            - name: PHIL_PORT
+              value: '80'
+            - name: PHIL_MAX_CPU
+              value: '$PHIL_MAX_CPU'
+            - name: CDN_HOST
+              value: fdn.uno
+            - name: IS_STAGING
+              value: '$IS_STAGING'
+            - name: TECH_BY_HOST
+              value: '$TECH_BY_HOST'
+            - name: PUBLIC_PHIL_API_URL
+              value: '$PUBLIC_PHIL_API_URL'
+            - name: PHIL_API_URL
+              value: '$PHIL_API_URL'
+            - name: PRIVATE_IMPACT_API_URL
+              value: '$PRIVATE_IMPACT_API_URL'
+            - name: PRIVATE_IRS_990_API_URL
+              value: '$PRIVATE_IRS_990_API_URL'
+            - name: REDIS_CACHE_HOST
+              value: '$REDIS_CACHE_HOST'
+            - name: REDIS_PUB_SUB_HOST
+              value: '$REDIS_PUB_SUB_HOST'
+            - name: REDIS_PERSISTENT_HOST
+              value: '$REDIS_PERSISTENT_HOST'
+            - name: ELASTICSEARCH_HOST
+              value: '$ALTELASTICSEARCH_HOST'
+            - name: SCYLLA_CONTACT_POINTS
+              value: '$SCYLLA_CONTACT_POINTS'
+
+            - name: GOOGLE_PROJECT_ID
+              value: '$PHIL_GOOGLE_PROJECT_ID'
+            - name: FIREBASE_PRIVATE_KEY_JSON
+              value: '$PHIL_FIREBASE_PRIVATE_KEY_JSON'
+            - name: GOOGLE_PRIVATE_KEY_JSON
+              value: '$GOOGLE_PRIVATE_KEY_JSON'
+            - name: 'GOOGLE_API_KEY'
+              value: '$PROUDLY_GIVES_GOOGLE_API_KEY'
+
+            - name: NATIVE_SORT_OF_SECRET
+              value: '$NATIVE_SORT_OF_SECRET'
+            - name: PASSWORD_RESET_SALT
+              value: '$PASSWORD_RESET_SALT'
+            - name: EMAIL_VERIFY_SALT
+              value: '$EMAIL_VERIFY_SALT'
+
+            - name: DEV_USE_HTTPS
+              value: '0'
+            - name: JWT_ES256_PRIVATE_KEY
+              value: "$JWT_ES256_PRIVATE_KEY"
+            - name: JWT_ES256_PUBLIC_KEY
+              value: "$JWT_ES256_PUBLIC_KEY"
+            - name: PHIL_AWS_SES_ACCESS_KEY_ID
+              value: '$PHIL_AWS_SES_ACCESS_KEY_ID'
+            - name: PHIL_AWS_SES_SECRET_ACCESS_KEY
+              value: '$PHIL_AWS_SES_SECRET_ACCESS_KEY'
+          ports:
+            - containerPort: 80
+          # readinessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 5
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 30

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cache
+  namespace: $NAMESPACE
+spec:
+  serviceName: redis-cache
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-cache
+  template:
+    metadata:
+      labels:
+        app: redis-cache
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+      containers:
+        - name: redis$TIMESTAMP
+          image: redis:3.2.8
+          resources:
+            requests:
+              memory: '$REDIS_CACHE_MEMORY_REQUEST'
+            limits:
+              cpu: '$REDIS_CACHE_MAX_CPU'
+              memory: '$REDIS_CACHE_MAX_MEMORY'
+          args:
+            - --maxmemory
+            - '$REDIS_CACHE_MAX_MEMORY'
+            - --maxmemory-policy
+            - allkeys-lru
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: do-block-storage
+      resources:
+        requests:
+          storage: 50Gi

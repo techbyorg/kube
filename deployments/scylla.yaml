@@ -1,0 +1,144 @@
+# NOTE: when adding new replicas, make sure to run with dev mode on first,
+# then turn off dev mode. otherwise will get var/lib/scylla/data did not pass validation tests, it may not be on XFS and/or has limited disk space. - Google Search
+# to do this, use scylla_new_node to prepare that disk, then delete and add here
+
+# TODO: when adding a new one, create volume first
+# doctl compute volume create scylla-xfs-0 --fs-type xfs --size 100GiB --region nyc1
+
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: scylla-xfs-0
+  annotations:
+    # fake it by indicating this is provisioned dynamically, so the system
+    # works properly
+    pv.kubernetes.io/provisioned-by: dobs.csi.digitalocean.com
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: do-block-storage-xfs
+  csi:
+    driver: dobs.csi.digitalocean.com
+    fsType: xfs
+    volumeHandle: e1b38dcf-e778-11e8-bcf2-0a58ac14445a
+    volumeAttributes:
+      com.digitalocean.csi/noformat: "true"
+
+---
+apiVersion: "apps/v1"
+kind: StatefulSet
+metadata:
+  name: scylla
+  namespace: $NAMESPACE
+spec:
+  selector:
+    matchLabels:
+      app: scylla
+  serviceName: scylla
+  replicas: 1 # 4
+  template:
+    metadata:
+      labels:
+        app: scylla
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: c-2
+      containers:
+      - name: scylla
+        # image: gcr.io/free-roam-app/google-samples/cassandra:v12
+        image: scylladb/scylla:3.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7000
+          name: intra-node
+        - containerPort: 7001
+          name: tls-intra-node
+        - containerPort: 7199
+          name: jmx
+        - containerPort: 9042
+          name: cql
+        - containerPort: 9160
+          name: thrift
+        - containerPort: 9180
+          name: prometheus
+        # resources:
+        #   limits:
+        #     cpu: $SCYLLA_CPU_LIMIT
+            # memory: 1Gi
+          # requests:
+          #  cpu: "500m"
+          #  memory: 1Gi
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+        # lifecycle:
+        #   preStop:
+        #     exec:
+        #       command: ["/bin/sh", "-c", "PID=$(pidof java) && kill $PID && while ps -p $PID > /dev/null; do sleep 1; done"]
+        args:
+          - --seeds
+          - scylla-0.scylla.$NAMESPACE.svc.cluster.local
+          - --memory
+          - '$SCYLLA_MEMORY_LIMIT'
+          - --developer-mode
+          - '0'
+          # - --smp
+          # - '$SCYLLA_SMP'
+          - --experimental
+          - '0'
+
+        env:
+        #   - name: MAX_HEAP_SIZE
+        #     value: 512M
+        #   - name: HEAP_NEWSIZE
+        #     value: 100M
+        #   - name: CASSANDRA_SEEDS
+        #     value: "scylla-0.scylla.$NAMESPACE.svc.cluster.local"
+          - name: CLUSTER_NAME
+            value: "Test Cluster"
+        #   - name: CASSANDRA_DC
+        #     value: "DC1"
+        #   - name: CASSANDRA_RACK
+        #     value: "Rack1"
+        #   - name: CASSANDRA_AUTO_BOOTSTRAP
+        #     value: "false"
+        #   - name: POD_IP
+        #     valueFrom:
+        #       fieldRef:
+        #         fieldPath: status.podIP
+        readinessProbe:
+          exec:
+            command:
+            # - /bin/bash
+            # - -c
+            # - /ready-probe.sh
+            - nodetool
+            - status
+          initialDelaySeconds: 90
+          timeoutSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/scylla
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: do-block-storage-xfs
+      resources:
+        requests:
+          storage: 100Gi # after increasing size: xfs_growfs /dev/sdb
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: do-block-storage-xfs
+  namespace: kube-system
+provisioner: com.digitalocean.csi.dobs
+parameters:
+  fstype: xfs

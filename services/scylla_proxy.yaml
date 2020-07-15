@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: scylla-proxy
+  labels:
+    name: scylla-proxy
+spec:
+  ports:
+    - name: elasticsearch-0
+      port: 9200
+
+    - name: scylla-0
+      port: 9042
+    - name: prometheus-0
+      port: 9180
+    - name: jmx-0
+      port: 7199
+    - name: thrift-0
+      port: 9160
+
+    - name: scylla-1
+      port: 9043
+    - name: prometheus-1
+      port: 9181
+    - name: jmx-1
+      port: 7200
+    - name: thrift-1
+      port: 9161
+
+    - name: scylla-2
+      port: 9044
+    - name: prometheus-2
+      port: 9182
+    - name: jmx-2
+      port: 7201
+    - name: thrift-2
+      port: 9162
+
+    - name: scylla-3
+      port: 9045
+    - name: prometheus-3
+      port: 9183
+    - name: jmx-3
+      port: 7202
+    - name: thrift-3
+      port: 9163
+  selector:
+    name: scylla-proxy

@@ -1,0 +1,63 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fundraise
+  namespace: $NAMESPACE
+spec:
+  replicas: $REPLICAS
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  minReadySeconds: 20
+  template:
+    metadata:
+      name: fundraise
+      labels:
+        name: fundraise
+        app: fundraise
+    spec:
+      nodeSelector:
+        doks.digitalocean.com/node-pool: tech-by
+        # beta.kubernetes.io/instance-type: s-2vcpu-4gb
+      containers:
+        - name: fundraise$TIMESTAMP
+          image: gcr.io/free-roam-app/fundraise:$TAG
+          # resources:
+          #   requests:
+          #     memory: '$TECH_BY_MEMORY_REQUEST'
+          #     cpu: '$TECH_BY_CPU_REQUEST'
+          env:
+            - name: FUNDRAISE_PORT
+              value: '8080'
+
+            - name: FIREBASE_API_KEY
+              value: '$FUNDRAISE_FIREBASE_API_KEY'
+            - name: FIREBASE_AUTH_DOMAIN
+              value: 'fundraise-demo.firebaseapp.com' # FIXME
+            - name: FIREBASE_DATABASE_URL
+              value: 'https://fundraise-demo.firebaseio.com' # FIXME
+            - name: FIREBASE_PROJECT_ID
+              value: 'fundraise-demo' # FIXME
+            - name: FIREBASE_MESSAGING_SENDER_ID
+              value: '228929433695' # FIXME
+            - name: FUNDRAISE_HOST
+              value: '$FUNDRAISE_HOST'
+            - name: PUBLIC_PHIL_API_URL
+              value: '$PUBLIC_PHIL_API_URL'
+            - name: PHIL_API_URL
+              value: '$PHIL_API_URL'
+            - name: DEV_USE_HTTPS
+              value: '0'
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            initialDelaySeconds: 180

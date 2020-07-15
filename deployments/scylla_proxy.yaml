@@ -1,0 +1,39 @@
+# to connect to scylla from localhost. can't use kubectl port-forward
+# "(exit status 1: Connection refused)" when trying to connect via node
+# https://github.com/pires/kubernetes-elasticsearch-cluster/issues/128
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: scylla-proxy
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: scylla-proxy
+      labels:
+        name: scylla-proxy
+        app: scylla-proxy
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+      containers:
+        - name: scylla-proxy$TIMESTAMP
+          image: gcr.io/free-roam-app/scylla-proxy:$TAG
+          env:
+            - name: REMOTE_HOST_0
+              value: 'scylla-0.scylla.$NAMESPACE'
+            - name: REMOTE_ELASTICSEARCH_HOST_0
+              value: 'altelasticsearch-0.altelasticsearch.$NAMESPACE'
+          ports:
+            - name: scylla
+              containerPort: 9042
+            - name: prometheus
+              containerPort: 9180
+            - name: jmx
+              containerPort: 7199
+            - name: thrift
+              containerPort: 9160
+            - name: elasticsearch
+              containerPort: 9200

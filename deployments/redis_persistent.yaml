@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-persistent
+  namespace: $NAMESPACE
+spec:
+  serviceName: redis-persistent
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-persistent
+  template:
+    metadata:
+      labels:
+        app: redis-persistent
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+      containers:
+        - name: redis$TIMESTAMP
+          image: redis:3.2.8
+          resources:
+            # requests:
+            #   memory: '$REDIS_PERSISTENT_MEMORY_REQUEST'
+            #   cpu: '$REDIS_PERSISTENT_CPU_REQUEST'
+            # limits:
+            #   cpu: '$REDIS_PERSISTENT_MAX_CPU'
+            #   memory: '$REDIS_PERSISTENT_MAX_MEMORY'
+          args:
+            - --appendonly
+            - 'yes'
+            - --appendfsync
+            - 'no'
+            - --auto-aof-rewrite-percentage
+            - '100'
+            - --auto-aof-rewrite-min-size
+            - 64mb
+            - --maxmemory
+            - '$REDIS_PERSISTENT_MAX_MEMORY'
+            - --maxmemory-policy
+            - allkeys-lru
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: do-block-storage
+      resources:
+        requests:
+          storage: 100Gi

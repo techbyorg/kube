@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: irs-990-api
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  minReadySeconds: 10
+  template:
+    metadata:
+      name: irs-990-api
+      labels:
+        name: irs-990-api
+        app: irs-990-api
+    spec:
+      nodeSelector:
+        doks.digitalocean.com/node-pool: tech-by
+      containers:
+        - name: irs-990-api
+          image: gcr.io/free-roam-app/irs-990-api:$TAG
+          resources:
+            requests:
+              cpu: 1500m
+          env:
+            # so pods will restart w/ `update -s` (from change in template)
+            - name: DEPLOY_TIME
+              value: '$TIMESTAMP'
+
+            - name: IRS_990_PORT
+              value: '80'
+            - name: IRSX_XML_HTTP_BASE
+              value: 'http://irs-990-server.production:8080' # droplet
+            - name: REDIS_CACHE_HOST
+              value: '$REDIS_CACHE_HOST'
+            - name: REDIS_PUB_SUB_HOST
+              value: '$REDIS_PUB_SUB_HOST'
+            - name: REDIS_PERSISTENT_HOST
+              value: '$REDIS_PERSISTENT_HOST'
+            - name: ELASTICSEARCH_HOST
+              value: '$ALTELASTICSEARCH_HOST'
+            - name: SCYLLA_CONTACT_POINTS
+              value: '$SCYLLA_CONTACT_POINTS'
+
+          ports:
+            - containerPort: 80
+          # readinessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 5
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 30
