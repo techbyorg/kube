@@ -1,0 +1,54 @@
+# Hack Club
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: slack-analytics-scraper
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  minReadySeconds: 10
+  template:
+    metadata:
+      name: slack-analytics-scraper
+      labels:
+        name: slack-analytics-scraper
+        app: slack-analytics-scraper
+    spec:
+      nodeSelector:
+        doks.digitalocean.com/node-pool: tech-by
+      containers:
+        - name: slack-analytics-scraper
+          image: gcr.io/free-roam-app/slack-analytics-scraper:$TAG
+          resources:
+            requests:
+              cpu: 1500m
+          env:
+            # so pods will restart w/ `update -s` (from change in template)
+            - name: DEPLOY_TIME
+              value: '$TIMESTAMP'
+
+            - name: SLACK_BOT_TOKEN
+              value: '$SLACK_BOT_TOKEN'
+            - name: SLACK_SIGNING_SECRET
+              value: '$SLACK_SIGNING_SECRET'
+            - name: SLACK_EMAIL
+              value: '$SLACK_EMAIL'
+            - name: SLACK_PASSWORD
+              value: '$SLACK_PASSWORD'
+
+          ports:
+            - containerPort: 3000
+          # readinessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 5
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthcheck/throw
+          #     port: 80
+          #   initialDelaySeconds: 30

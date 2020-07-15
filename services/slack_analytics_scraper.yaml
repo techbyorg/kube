@@ -1,0 +1,12 @@
+# Hack Club
+apiVersion: v1
+kind: Service
+metadata:
+  name: slack-analytics-scraper
+  labels:
+    name: slack-analytics-scraper
+spec:
+  ports:
+    - port: 80
+  selector:
+    name: slack-analytics-scraper

@@ -348,5 +348,5 @@ function build () {
 
 main "$@"
 
-echo -e "\nDone!"
+echo -e "Done!"
 exit 0
