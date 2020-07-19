@@ -19,7 +19,7 @@ spec:
         app: slack-analytics-scraper
     spec:
       nodeSelector:
-        doks.digitalocean.com/node-pool: tech-by
+        beta.kubernetes.io/instance-type: s-2vcpu-4gb
       containers:
         - name: slack-analytics-scraper
           image: gcr.io/free-roam-app/slack-analytics-scraper:$TAG
@@ -39,6 +39,8 @@ spec:
               value: '$SLACK_EMAIL'
             - name: SLACK_PASSWORD
               value: '$SLACK_PASSWORD'
+            - name: 'TECH_BY_API_KEY'
+              value: '$HACK_CLUB_TECH_BY_API_KEY'
 
           ports:
             - containerPort: 3000

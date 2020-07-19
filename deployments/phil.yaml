@@ -42,6 +42,8 @@ spec:
               value: '$IS_STAGING'
             - name: TECH_BY_HOST
               value: '$TECH_BY_HOST'
+            - name: TECH_BY_API_KEY
+              value: '$TECH_BY_API_KEY'
             - name: PUBLIC_PHIL_API_URL
               value: '$PUBLIC_PHIL_API_URL'
             - name: PHIL_API_URL
