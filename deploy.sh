@@ -21,7 +21,7 @@ function main () {
   Available Commands:
     update                  create/update deployment
     semver                  version project
-    yolo                    run: 'staging -f' 'production -s' 'semver -p patch'
+    yolo                    run: 'staging update' 'production update -s' 'semver -p patch'
                                (gives prompt between each step)
     logs                    tail project logs
     logsc                    tail project container logs (when multiple containers per pod)
@@ -30,9 +30,6 @@ function main () {
   Available Global Flags:
     -s                      skip building the project
     -t                      tag to deploy
-
-  Available update Flags:
-    -f                      fast deploy, only wait 1s (warning: may cause downtime)
 
   Available semver Flags:
     -p [patch|minor|major]  required, version type, defaults to patch
@@ -108,13 +105,13 @@ function yolo () {
     exit 1
   fi
 
-  # echo "./deploy.sh staging update $PROJECT -f -t latest"
+  # echo "./deploy.sh staging update $PROJECT -t latest"
   # read -p "press [ENTER] to continue"
-  # ./deploy.sh staging update $PROJECT -f -t latest
+  # ./deploy.sh staging update $PROJECT -t latest
 
-  echo "./deploy.sh production update $PROJECT -f -t latest"
+  echo "./deploy.sh production update $PROJECT -t latest"
   read -p "check staging, then press [ENTER] to continue"
-  ./deploy.sh production update $PROJECT -f -t latest
+  ./deploy.sh production update $PROJECT -t latest
 
   echo "./deploy.sh production semver $PROJECT -s -p patch"
   read -p "check production, then press [ENTER] to continue"
@@ -128,7 +125,6 @@ function update () {
   local TAG=$(get_current_version $PROJECT)
   local TIMESTAMP=$(date +%s)
 
-  local UPDATE_PERIOD=5s
   local SKIP_BUILD=0
 
   while getopts "st:f" opt; do
@@ -141,9 +137,6 @@ function update () {
         if [ $TAG != 'latest' ]; then
           SKIP_BUILD=1
         fi
-      ;;
-      f)
-        UPDATE_PERIOD=1s
       ;;
     esac
   done
