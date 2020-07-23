@@ -109,6 +109,7 @@ function yolo () {
   # read -p "press [ENTER] to continue"
   # ./deploy.sh staging update $PROJECT -t latest
 
+  # TODO: if enabling staging, add -s here
   echo "./deploy.sh production update $PROJECT -t latest"
   read -p "check staging, then press [ENTER] to continue"
   ./deploy.sh production update $PROJECT -t latest

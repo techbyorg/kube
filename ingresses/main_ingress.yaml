@@ -17,8 +17,23 @@ spec:
   - hosts:
     - impactdns.techby.org
     secretName: main-tls
+  - hosts:
+    - numberwang.hackclub.com
+    secretName: hackclub-tls
   # rules:
   # - host: impactdns.techby.org
+  #   http:
+  #     paths:
+  #     - backend:
+  #         serviceName: impact
+  #         servicePort: 8080
+  # - host: numberwang.hackclub.com
+  #   http:
+  #     paths:
+  #     - backend:
+  #         serviceName: impact
+  #         servicePort: 8080
+  # - host: data.upchieve.org
   #   http:
   #     paths:
   #     - backend:
