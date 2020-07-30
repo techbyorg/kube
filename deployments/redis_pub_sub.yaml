@@ -15,10 +15,10 @@ spec:
         app: redis-pub-sub
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: redis$TIMESTAMP
-          image: redis:3.2.8
+          image: redis:6.0.6
           resources:
             # requests:
             #   memory: '$REDIS_PUB_SUB_MEMORY_REQUEST'

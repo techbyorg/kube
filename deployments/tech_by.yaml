@@ -1,10 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tech-by
   namespace: $NAMESPACE
 spec:
   replicas: $REPLICAS
+  selector:
+    matchLabels:
+      app: tech-by
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,14 +17,13 @@ spec:
     metadata:
       name: tech-by
       labels:
-        name: tech-by
         app: tech-by
     spec:
       nodeSelector:
-        doks.digitalocean.com/node-pool: tech-by
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: tech-by$TIMESTAMP
-          image: gcr.io/free-roam-app/tech-by:$TAG
+          image: registry.digitalocean.com/tech-by/tech-by:$TAG
           # resources:
           #   requests:
           #     memory: '$TECH_BY_MEMORY_REQUEST'

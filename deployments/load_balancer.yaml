@@ -1,22 +1,24 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: load-balancer
   namespace: $NAMESPACE
 spec:
   replicas: $REPLICAS
+  selector:
+    matchLabels:
+      app: load-balancer
   template:
     metadata:
       name: load-balancer
       labels:
-        name: load-balancer
         app: load-balancer
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: load-balancer$TIMESTAMP
-          image: gcr.io/free-roam-app/load-balancer:$TAG
+          image: registry.digitalocean.com/tech-by/load-balancer:$TAG
           # resources:
           #   requests:
           #     cpu: '$LOAD_BALANCER_CPU_REQUEST'

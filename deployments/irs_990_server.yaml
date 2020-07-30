@@ -36,22 +36,24 @@ spec:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: irs-990-server
   namespace: $NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: irs-990-server
   template:
     metadata:
       name: irs-990-server
       labels:
-        name: irs-990-server
         app: irs-990-server
     spec:
       nodeSelector:
-        doks.digitalocean.com/node-pool: tech-by
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: irs-990-server$TIMESTAMP
           image: halverneus/static-file-server

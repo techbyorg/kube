@@ -1,22 +1,21 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: altelasticsearch
+  name: elasticsearch
   namespace: $NAMESPACE
 spec:
-  serviceName: altelasticsearch
+  serviceName: elasticsearch
   replicas: 1
   selector:
     matchLabels:
-      app: altelasticsearch
+      app: elasticsearch
   template:
     metadata:
       labels:
-        app: altelasticsearch
+        app: elasticsearch
     spec:
       nodeSelector:
-        # cloud.google.com/gke-nodepool: altelasticsearch
-        beta.kubernetes.io/instance-type: s-4vcpu-8gb
+        doks.digitalocean.com/node-pool: standard
       terminationGracePeriodSeconds: 300
       initContainers:
       # NOTE:
@@ -57,8 +56,8 @@ spec:
         securityContext:
           privileged: true
       containers:
-      - name: altelasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.5.2
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.8.1
         ports:
         - containerPort: 9200
           name: http
@@ -73,23 +72,28 @@ spec:
         env:
           # NOTE: the cluster name; update this
           - name: cluster.name
-            value: altelasticsearch-cluster
+            value: elasticsearch-cluster
           - name: node.name
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
           - name: cluster.initial_master_nodes
-            value: "altelasticsearch-0,altelasticsearch-1" # ,elasticsearch-2.elasticsearch.production.svc.cluster.local,elasticsearch-3.elasticsearch.production.svc.cluster.local,elasticsearch-4.elasticsearch.production.svc.cluster.local"
+            value: "elasticsearch-0" # ,elasticsearch-1,elasticsearch-2.elasticsearch.production.svc.cluster.local,elasticsearch-3.elasticsearch.production.svc.cluster.local,elasticsearch-4.elasticsearch.production.svc.cluster.local"
           # NOTE: This will tell the elasticsearch node where to connect to other nodes to form a cluster
           - name: discovery.zen.ping.unicast.hosts
-            value: "altelasticsearch-0.altelasticsearch.production.svc.cluster.local" # ,altelasticsearch-1.altelasticsearch.production.svc.cluster.local"
+            value: "elasticsearch-0.elasticsearch.production.svc.cluster.local" # ,elasticsearch-1.elasticsearch.production.svc.cluster.local"
           - name: thread_pool.write.queue_size
             value: "1000"
+          - name: reindex.remote.whitelist
+            value: 178.128.132.236:9200
+
           # NOTE: You can increase the heap size
           - name: ES_JAVA_OPTS
             value: -Xms1g -Xmx1g
           # - name: ES_JAVA_OPTS
           #   value: -Xms4g -Xmx4g
+          - name: NETWORK_HOST # for vpn to be able to access (bind to any local ip)
+            value: "site,local"
         volumeMounts:
         - name: data
           mountPath: /usr/share/elasticsearch/data
@@ -102,4 +106,4 @@ spec:
       storageClassName: do-block-storage
       resources:
         requests:
-          storage: 500Gi
+          storage: 50Gi

@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: main
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: impact.techby.org
+    http:
+      paths:
+      - backend:
+          serviceName: impact
+          servicePort: 8080
+  
+  - host: techby.org
+    http:
+      paths:
+      - backend:
+          serviceName: tech-by
+          servicePort: 8080
+  
+  - host: fundraise.techby.org
+    http:
+      paths:
+      - backend:
+          serviceName: fundraise
+          servicePort: 8080

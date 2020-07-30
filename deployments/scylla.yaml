@@ -1,32 +1,12 @@
-# NOTE: when adding new replicas, make sure to run with dev mode on first,
-# then turn off dev mode. otherwise will get var/lib/scylla/data did not pass validation tests, it may not be on XFS and/or has limited disk space. - Google Search
-# to do this, use scylla_new_node to prepare that disk, then delete and add here
-
-# TODO: when adding a new one, create volume first
-# doctl compute volume create scylla-xfs-0 --fs-type xfs --size 100GiB --region nyc1
-
-apiVersion: "v1"
-kind: "PersistentVolume"
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
-  name: scylla-xfs-0
-  annotations:
-    # fake it by indicating this is provisioned dynamically, so the system
-    # works properly
-    pv.kubernetes.io/provisioned-by: dobs.csi.digitalocean.com
-spec:
-  capacity:
-    storage: 100Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: do-block-storage-xfs
-  csi:
-    driver: dobs.csi.digitalocean.com
-    fsType: xfs
-    volumeHandle: e1b38dcf-e778-11e8-bcf2-0a58ac14445a
-    volumeAttributes:
-      com.digitalocean.csi/noformat: "true"
-
+  name: do-block-storage-xfs
+provisioner: dobs.csi.digitalocean.com
+parameters:
+  fsType: xfs
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
 ---
 apiVersion: "apps/v1"
 kind: StatefulSet
@@ -45,10 +25,9 @@ spec:
         app: scylla
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: c-2
+        doks.digitalocean.com/node-pool: standard
       containers:
       - name: scylla
-        # image: gcr.io/free-roam-app/google-samples/cassandra:v12
         image: scylladb/scylla:3.0.0
         imagePullPolicy: Always
         ports:
@@ -99,7 +78,7 @@ spec:
         #   - name: CASSANDRA_SEEDS
         #     value: "scylla-0.scylla.$NAMESPACE.svc.cluster.local"
           - name: CLUSTER_NAME
-            value: "Test Cluster"
+            value: "techby-main"
         #   - name: CASSANDRA_DC
         #     value: "DC1"
         #   - name: CASSANDRA_RACK
@@ -132,13 +111,4 @@ spec:
       storageClassName: do-block-storage-xfs
       resources:
         requests:
-          storage: 100Gi # after increasing size: xfs_growfs /dev/sdb
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: do-block-storage-xfs
-  namespace: kube-system
-provisioner: com.digitalocean.csi.dobs
-parameters:
-  fstype: xfs
+          storage: 50Gi # after increasing size: xfs_growfs /dev/sdb

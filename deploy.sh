@@ -222,11 +222,11 @@ function set_version () {
   checkout_master
   git tag $VERSION
   git push origin master --tags
-  docker tag $PROJECT gcr.io/free-roam-app/$PROJECT:$VERSION
-  docker push gcr.io/free-roam-app/$PROJECT:$VERSION
+  docker tag $PROJECT registry.digitalocean.com/tech-by/$PROJECT:$VERSION
+  docker push registry.digitalocean.com/tech-by/$PROJECT:$VERSION
 
   # clean up
-  docker rmi gcr.io/free-roam-app/$PROJECT:$VERSION
+  docker rmi registry.digitalocean.com/tech-by/$PROJECT:$VERSION
 
   cd - 2>&1 >> /dev/null
 }
@@ -268,10 +268,10 @@ function push () {
   local TAG="$2"
 
   echo "pushing $PROJECT:$TAG"
-  docker tag $PROJECT gcr.io/free-roam-app/$PROJECT:$TAG
-  # gcloud docker -- push gcr.io/free-roam-app/$PROJECT:$TAG
+  docker tag $PROJECT registry.digitalocean.com/tech-by/$PROJECT:$TAG
+  # gcloud docker -- push registry.digitalocean.com/tech-by/$PROJECT:$TAG
   # run gcloud auth configure-docker
-  docker push gcr.io/free-roam-app/$PROJECT:$TAG
+  docker push registry.digitalocean.com/tech-by/$PROJECT:$TAG
 }
 
 function project_deployment_file () {
@@ -332,7 +332,7 @@ function build () {
     echo "pre-building project via npm"
     # npm install
     # redirect errors to /dev/null & don't fail if dist script doesn't exist
-    npm run dist 2> /dev/null || true
+    npm run dist --if-present
   fi
 
   echo "Building Docker image"

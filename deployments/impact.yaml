@@ -1,10 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: impact
   namespace: $NAMESPACE
 spec:
   replicas: $REPLICAS
+  selector:
+    matchLabels:
+      app: impact
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,14 +17,13 @@ spec:
     metadata:
       name: impact
       labels:
-        name: impact
         app: impact
     spec:
       nodeSelector:
-        doks.digitalocean.com/node-pool: tech-by
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: impact$TIMESTAMP
-          image: gcr.io/free-roam-app/impact:$TAG
+          image: registry.digitalocean.com/tech-by/impact:$TAG
           env:
             - name: IMPACT_PORT
               value: '8080'

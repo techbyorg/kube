@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: api
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - host: api.techby.org
+    http:
+      paths:
+      - path: /990/v1(/|$)(.*)
+        backend:
+          serviceName: irs-990-api
+          servicePort: 80
+    
+      - path: /impact/v1(/|$)(.*)
+        backend:
+          serviceName: impact-api
+          servicePort: 80

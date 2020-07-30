@@ -1,10 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fundraise
   namespace: $NAMESPACE
 spec:
   replicas: $REPLICAS
+  selector:
+    matchLabels:
+      app: fundraise
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,15 +17,14 @@ spec:
     metadata:
       name: fundraise
       labels:
-        name: fundraise
         app: fundraise
     spec:
       nodeSelector:
-        doks.digitalocean.com/node-pool: tech-by
-        # beta.kubernetes.io/instance-type: s-2vcpu-4gb
+        doks.digitalocean.com/node-pool: standard
+        # doks.digitalocean.com/node-pool: standard
       containers:
         - name: fundraise$TIMESTAMP
-          image: gcr.io/free-roam-app/fundraise:$TAG
+          image: registry.digitalocean.com/tech-by/fundraise:$TAG
           # resources:
           #   requests:
           #     memory: '$TECH_BY_MEMORY_REQUEST'

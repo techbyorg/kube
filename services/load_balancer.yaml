@@ -2,8 +2,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: load-balancer
-  labels:
-    name: load-balancer
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
@@ -12,7 +10,7 @@ spec:
   ports:
     - port: 80
   selector:
-    name: load-balancer
+    app: load-balancer
   # externalIPs:
   #   - '35.230.40.73'
   sessionAffinity: ClientIP

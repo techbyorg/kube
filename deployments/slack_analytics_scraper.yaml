@@ -1,11 +1,14 @@
 # Hack Club
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: slack-analytics-scraper
   namespace: $NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: slack-analytics-scraper
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,14 +18,13 @@ spec:
     metadata:
       name: slack-analytics-scraper
       labels:
-        name: slack-analytics-scraper
         app: slack-analytics-scraper
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: slack-analytics-scraper
-          image: gcr.io/free-roam-app/slack-analytics-scraper:$TAG
+          image: registry.digitalocean.com/tech-by/slack-analytics-scraper:$TAG
           resources:
             requests:
               cpu: 1500m

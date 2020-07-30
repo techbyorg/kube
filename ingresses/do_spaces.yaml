@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: do-spaces
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/secure-backends: "true"
+    nginx.ingress.kubernetes.io/upstream-vhost: "cdns.tdn.one"
+spec:
+  rules:
+  - host: tdn.one
+    http:
+      paths:
+      - backend:
+          serviceName: do-spaces
+          servicePort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: do-spaces
+spec:
+  type: ExternalName
+  externalName: cdns.tdn.one

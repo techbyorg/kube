@@ -1,10 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: irs-990-api
   namespace: $NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: irs-990-api
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,17 +17,16 @@ spec:
     metadata:
       name: irs-990-api
       labels:
-        name: irs-990-api
         app: irs-990-api
     spec:
       nodeSelector:
-        doks.digitalocean.com/node-pool: tech-by
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: irs-990-api
-          image: gcr.io/free-roam-app/irs-990-api:$TAG
-          resources:
-            requests:
-              cpu: 1500m
+          image: registry.digitalocean.com/tech-by/irs-990-api:$TAG
+          # resources:
+          #   requests:
+          #     cpu: 1500m
           env:
             # so pods will restart w/ `update -s` (from change in template)
             - name: DEPLOY_TIME
@@ -43,7 +45,7 @@ spec:
             - name: REDIS_PERSISTENT_HOST
               value: '$REDIS_PERSISTENT_HOST'
             - name: ELASTICSEARCH_HOST
-              value: '$ALTELASTICSEARCH_HOST'
+              value: '$ELASTICSEARCH_HOST'
             - name: SCYLLA_CONTACT_POINTS
               value: '$SCYLLA_CONTACT_POINTS'
 

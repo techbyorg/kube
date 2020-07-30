@@ -1,24 +1,26 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cassandra-web
   # namespace: $NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: cassandra-web
   template:
     metadata:
       name: cassandra-web
       labels:
-        name: cassandra-web
         app: cassandra-web
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: cassandra-web$TIMESTAMP
           image: delermando/docker-cassandra-web:v0.4.0
           env:
             - name: CASSANDRA_HOST_IP
-              value: '10.245.244.135'
+              value: '10.244.0.25' # scylla-0 pod
           ports:
             - containerPort: 3000

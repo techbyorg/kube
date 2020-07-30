@@ -1,10 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: phil
   namespace: $NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: phil
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,14 +17,13 @@ spec:
     metadata:
       name: phil
       labels:
-        name: phil
         app: phil
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: s-4vcpu-8gb
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: phil
-          image: gcr.io/free-roam-app/phil:$TAG
+          image: registry.digitalocean.com/tech-by/phil:$TAG
           # resources:
           #   requests:
           #     cpu: 500m
@@ -59,21 +61,19 @@ spec:
             - name: REDIS_PERSISTENT_HOST
               value: '$REDIS_PERSISTENT_HOST'
             - name: ELASTICSEARCH_HOST
-              value: '$ALTELASTICSEARCH_HOST'
+              value: '$ELASTICSEARCH_HOST'
             - name: SCYLLA_CONTACT_POINTS
               value: '$SCYLLA_CONTACT_POINTS'
 
             - name: GOOGLE_PROJECT_ID
               value: '$PHIL_GOOGLE_PROJECT_ID'
             - name: FIREBASE_PRIVATE_KEY_JSON
-              value: '$PHIL_FIREBASE_PRIVATE_KEY_JSON'
+              value: '$FIREBASE_PRIVATE_KEY_JSON'
             - name: GOOGLE_PRIVATE_KEY_JSON
               value: '$GOOGLE_PRIVATE_KEY_JSON'
             - name: 'GOOGLE_API_KEY'
-              value: '$PROUDLY_GIVES_GOOGLE_API_KEY'
+              value: '$GOOGLE_API_KEY'
 
-            - name: NATIVE_SORT_OF_SECRET
-              value: '$NATIVE_SORT_OF_SECRET'
             - name: PASSWORD_RESET_SALT
               value: '$PASSWORD_RESET_SALT'
             - name: EMAIL_VERIFY_SALT

@@ -1,19 +1,21 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: elasticsearch-hq
   namespace: $NAMESPACE
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch-hq
   template:
     metadata:
       name: elasticsearch-hq
       labels:
-        name: elasticsearch-hq
         app: elasticsearch-hq
     spec:
       nodeSelector:
-        beta.kubernetes.io/instance-type: s-2vcpu-4gb
+        doks.digitalocean.com/node-pool: standard
       containers:
         - name: elasticsearch-hq$TIMESTAMP
           image: elastichq/elasticsearch-hq
