@@ -49,6 +49,10 @@ spec:
             - name: SCYLLA_CONTACT_POINTS
               value: '$SCYLLA_CONTACT_POINTS'
 
+            # TODO: rm
+            - name: UPCHIEVE_HACK_PASS
+              value: '$UPCHIEVE_HACK_PASS'
+
             - name: DEV_USE_HTTPS
               value: '0'
           ports:

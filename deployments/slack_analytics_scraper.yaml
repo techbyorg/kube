@@ -25,9 +25,9 @@ spec:
       containers:
         - name: slack-analytics-scraper
           image: registry.digitalocean.com/tech-by/slack-analytics-scraper:$TAG
-          resources:
-            requests:
-              cpu: 1500m
+          # resources:
+          #   requests:
+          #     cpu: 1500m
           env:
             # so pods will restart w/ `update -s` (from change in template)
             - name: DEPLOY_TIME

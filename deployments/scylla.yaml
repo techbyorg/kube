@@ -28,7 +28,7 @@ spec:
         doks.digitalocean.com/node-pool: standard
       containers:
       - name: scylla
-        image: scylladb/scylla:3.0.0
+        image: scylladb/scylla:4.1.3
         imagePullPolicy: Always
         ports:
         - containerPort: 7000

@@ -21,6 +21,6 @@ spec:
           image: delermando/docker-cassandra-web:v0.4.0
           env:
             - name: CASSANDRA_HOST_IP
-              value: '10.244.0.25' # scylla-0 pod
+              value: '10.244.0.94' # scylla-0 pod
           ports:
             - containerPort: 3000
