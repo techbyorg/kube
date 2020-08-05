@@ -22,13 +22,15 @@ function main () {
     update                  create/update deployment
     semver                  version project
     yolo                    run: 'staging update' 'production update -s' 'semver -p patch'
-                               (gives prompt between each step)
+                              (gives prompt between each step)
     logs                    tail project logs
     logsc                    tail project container logs (when multiple containers per pod)
     delete                  delete pods by project name
 
   Available Global Flags:
     -s                      skip building the project
+    -d                      always run docker push even if skipping full build 
+                              (eg staging -> latest tag change)
     -t                      tag to deploy
 
   Available semver Flags:
@@ -105,14 +107,18 @@ function yolo () {
     exit 1
   fi
 
-  # echo "./deploy.sh staging update $PROJECT -t latest"
+  # echo "./deploy.sh staging update $PROJECT -t staging"
   # read -p "press [ENTER] to continue"
-  # ./deploy.sh staging update $PROJECT -t latest
+  # ./deploy.sh staging update $PROJECT -t staging
 
-  # TODO: if enabling staging, add -s here
-  echo "./deploy.sh production update $PROJECT -t latest"
+  # TODO: if enabling staging, add -s and -d here
+  echo "./deploy.sh production update $PROJECT -t staging"
   read -p "check staging, then press [ENTER] to continue"
-  ./deploy.sh production update $PROJECT -t latest
+  ./deploy.sh production update $PROJECT -t staging
+
+  echo "./deploy.sh production update $PROJECT -s -d -t latest"
+  read -p "check staging, then press [ENTER] to continue"
+  ./deploy.sh production update $PROJECT -s -d -t latest
 
   echo "./deploy.sh production semver $PROJECT -s -p patch"
   read -p "check production, then press [ENTER] to continue"
@@ -127,15 +133,19 @@ function update () {
   local TIMESTAMP=$(date +%s)
 
   local SKIP_BUILD=0
+  local DOCKER_PUSH=0
 
-  while getopts "st:f" opt; do
+  while getopts "sdt:" opt; do
     case $opt in
       s)
         SKIP_BUILD=1
       ;;
+      d)
+        DOCKER_PUSH=1
+      ;;
       t)
         TAG=$OPTARG
-        if [ $TAG != 'latest' ]; then
+        if [ $TAG != 'latest' ] && [ $TAG != 'staging' ]; then
           SKIP_BUILD=1
         fi
       ;;
@@ -149,6 +159,8 @@ function update () {
   if [ $SKIP_BUILD == "0" ]; then
     update_repo $PROJECT
     build $PROJECT
+    push $PROJECT $TAG
+  elif [ $DOCKER_PUSH == "1" ]; then
     push $PROJECT $TAG
   else
     echo "Skipping build"
@@ -269,8 +281,6 @@ function push () {
 
   echo "pushing $PROJECT:$TAG"
   docker tag $PROJECT registry.digitalocean.com/tech-by/$PROJECT:$TAG
-  # gcloud docker -- push registry.digitalocean.com/tech-by/$PROJECT:$TAG
-  # run gcloud auth configure-docker
   docker push registry.digitalocean.com/tech-by/$PROJECT:$TAG
 }
 
