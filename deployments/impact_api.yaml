@@ -62,8 +62,8 @@ spec:
           #     path: /healthcheck/throw
           #     port: 80
           #   initialDelaySeconds: 5
-          # livenessProbe:
-          #   httpGet:
-          #     path: /healthcheck/throw
-          #     port: 80
-          #   initialDelaySeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /healthcheck/throw
+              port: 80
+            initialDelaySeconds: 30

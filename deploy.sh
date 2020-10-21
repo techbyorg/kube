@@ -109,20 +109,16 @@ function yolo () {
 
   # echo "./deploy.sh staging update $PROJECT -t staging"
   # read -p "press [ENTER] to continue"
-  # ./deploy.sh staging update $PROJECT -t staging
+  # ./deploy.sh staging update $PROJECT -t staging # this might get cached weird by DO registry. might need version #
 
   # TODO: if enabling staging, add -s and -d here
-  echo "./deploy.sh production update $PROJECT -t staging"
-  read -p "check staging, then press [ENTER] to continue"
-  ./deploy.sh production update $PROJECT -t staging
-
-  echo "./deploy.sh production update $PROJECT -s -d -t latest"
-  read -p "check staging, then press [ENTER] to continue"
-  ./deploy.sh production update $PROJECT -s -d -t latest
-
-  echo "./deploy.sh production semver $PROJECT -s -p patch"
+  echo "./deploy.sh production semver $PROJECT -p patch"
   read -p "check production, then press [ENTER] to continue"
-  ./deploy.sh production semver $PROJECT -s -p patch
+  ./deploy.sh production semver $PROJECT -p patch
+
+  echo "./deploy.sh production update $PROJECT -s"
+  read -p "check staging, then press [ENTER] to continue"
+  ./deploy.sh production update $PROJECT -s
 
 }
 
@@ -132,39 +128,9 @@ function update () {
   local TAG=$(get_current_version $PROJECT)
   local TIMESTAMP=$(date +%s)
 
-  local SKIP_BUILD=0
-  local DOCKER_PUSH=0
-
-  while getopts "sdt:" opt; do
-    case $opt in
-      s)
-        SKIP_BUILD=1
-      ;;
-      d)
-        DOCKER_PUSH=1
-      ;;
-      t)
-        TAG=$OPTARG
-        if [ $TAG != 'latest' ] && [ $TAG != 'staging' ]; then
-          SKIP_BUILD=1
-        fi
-      ;;
-    esac
-  done
-
   local UPDATING_FILE=$(project_deployment_file $PROJECT $TAG $TIMESTAMP)
 
   echo "Rolling update to tag $TAG"
-
-  if [ $SKIP_BUILD == "0" ]; then
-    update_repo $PROJECT
-    build $PROJECT
-    push $PROJECT $TAG
-  elif [ $DOCKER_PUSH == "1" ]; then
-    push $PROJECT $TAG
-  else
-    echo "Skipping build"
-  fi
 
   kubectl apply -f $UPDATING_FILE --namespace="$NAMESPACE" --record
 }
@@ -191,9 +157,7 @@ function semver () {
   if [ $SKIP_BUILD == "0" ]; then
     update_repo $PROJECT
     build $PROJECT
-    push $PROJECT $TAG
   fi
-
 
   local CURRENT_VERSION=$(get_current_version $PROJECT)
   local NEXT_VERSION=$(get_next_version $CURRENT_VERSION $TYPE)

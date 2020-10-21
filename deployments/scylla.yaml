@@ -1,3 +1,4 @@
+# fix for "globalmount failed: Invalid argument\n" is just to restart node and recreate ss/pvc/pv
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -7,6 +8,29 @@ parameters:
   fsType: xfs
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+---
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: scylla-xfs-0
+  annotations:
+    # fake it by indicating this is provisioned dynamically, so the system
+    # works properly
+    pv.kubernetes.io/provisioned-by: dobs.csi.digitalocean.com
+spec:
+  capacity:
+    storage: 80Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: do-block-storage-xfs
+  csi:
+    driver: dobs.csi.digitalocean.com
+    fsType: xfs
+    volumeHandle: 5af624b9-d1af-11ea-bebe-0a58ac1420fe
+    volumeAttributes:
+      com.digitalocean.csi/noformat: "true"
 ---
 apiVersion: "apps/v1"
 kind: StatefulSet
@@ -111,4 +135,4 @@ spec:
       storageClassName: do-block-storage-xfs
       resources:
         requests:
-          storage: 50Gi # after increasing size: xfs_growfs /dev/sdb
+          storage: 80Gi # after increasing size: xfs_growfs /dev/sda
